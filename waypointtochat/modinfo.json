@@ -1,0 +1,13 @@
+{
+    "type": "code",
+    "modid": "vsmod_hudtesting",
+    "name": "vsmod_hudtesting",
+    "authors": [
+        "Gravydigger"
+    ],
+    "description": "To be added",
+    "version": "0.1.0",
+    "dependencies": {
+        "game": "1.19.8"
+    }
+}
