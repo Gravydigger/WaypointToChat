@@ -3,6 +3,7 @@ using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 using HarmonyLib;
 using System.Reflection;
+using Vintagestory.API.MathTools;
 
 public class WaypointToChat : ModSystem
 {
@@ -26,13 +27,20 @@ public class WaypointToChat : ModSystem
             postfix: new HarmonyMethod(typeof(WaypointToChat).GetMethod(nameof(MouseUp))));
     }
 
-    public static void MouseUp(WaypointMapComponent __instance, MouseEvent args, GuiElementMap mapElem)
+    // Postfix patching the following method:
+    // https://github.com/anegostudios/vsessentialsmod/blob/master/Systems/WorldMap/WaypointLayer/WaypointMapComponent.cs#L135-L186
+    public static void MouseUp(WaypointMapComponent __instance, MouseEvent args)
     {
-        Waypoint myvalue = Traverse.Create(__instance).Field("waypoint").GetValue() as Waypoint;
-
-        if (args.Button == EnumMouseButton.Right && __instance.capi.World.Player.Entity.Controls.CtrlKey)
+        ICoreClientAPI capi = __instance.capi;
+        if (args.Button == EnumMouseButton.Right && capi.World.Player.Entity.Controls.CtrlKey)
         {
-            __instance.capi.Logger.Debug("Yippee!!");
+            Waypoint waypoint = Traverse.Create(__instance).Field("waypoint").GetValue() as Waypoint;
+
+            var pos = waypoint.Position.AsBlockPos;
+            pos.X -= (int)capi.World.DefaultSpawnPosition.X;
+            pos.Z -= (int)capi.World.DefaultSpawnPosition.Z;
+
+            capi.SendChatMessage(string.Format("<a href=\"chattype:///waypoint addati {0} {1} {2} {3} {4} {5} {6}\">[{6}]</a>", waypoint.Icon, pos.X, pos.Y, pos.Z, waypoint.Pinned, ColorUtil.Int2Hex(waypoint.Color), waypoint.Title));
         }
     }
 
